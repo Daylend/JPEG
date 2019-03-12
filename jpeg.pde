@@ -43,7 +43,7 @@ double[] multiply(double[] a, double[] b)
       for(int k = 0; k < 8; k++)
       {
         // product[i][j] += firstMatrix[i][k] * secondMatrix[k][j];
-        c[i + j * 8] += a[k + i * 8] * b[k + j * 8];
+        c[j + i * 8] += a[k + i * 8] * b[j + k * 8];
       }
     }
   }
@@ -72,9 +72,13 @@ double[] dctGenerate()
     int j = i % 8;
     
     if(ii == 0)
+    {
       dctMatrix[i] = 1 / Math.sqrt(8);
+    }
     else
+    {
       dctMatrix[i] = Math.sqrt(2.0/8.0) * Math.cos( ((2.0*j+1.0)*ii*3.1415926) / (2.0*8.0) );
+    }
   }
   return dctMatrix;
 }
@@ -175,8 +179,8 @@ void draw() {
      asdf = !asdf;
   }
   double[] testM3 = multiply(testM1, testM2);
-  double[] dct = multiply(testM, dctMatrix);
-  dct = multiply(dct, dctTransposed);
+  double[] dct = multiply(testM, dctTransposed);
+  dct = multiply(dctMatrix, dct);
   for(double num : dct)
     print(num + "\n");
   
