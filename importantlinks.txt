@@ -1,0 +1,4 @@
+https://en.wikipedia.org/wiki/JPEG#JPEG_codec_example
+https://en.wikipedia.org/wiki/YCbCr
+https://en.wikipedia.org/wiki/Chroma_subsampling
+http://lea.hamradio.si/~s51kq/V-BAS.HTM
