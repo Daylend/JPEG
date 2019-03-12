@@ -40,7 +40,8 @@ double[] multiply(double[] a, double[] b)
     {
       for(int k = 0; k < 8; k++)
       {
-        c[i + j * 8] = a[i + k * 8] * b[k + j * 8];
+        // product[i][j] += firstMatrix[i][k] * secondMatrix[k][j];
+        c[j + i * 8] = a[k + i * 8] * b[j + k * 8];
       }
     }
   }
@@ -160,13 +161,18 @@ void draw() {
   double[] testM = {26, -5, -5, -5, -5, -5, -5, 8, 64, 52, 8, 26, 26, 26, 8, -18, 126, 70, 26, 26, 52, 26, -5, -5, 111, 52, 8, 52, 52, 38, -5, -5, 52, 26, 8, 39, 38, 21, 8, 8, 0, 8, -5, 8, 26, 52, 70, 26, -5, -23, -18, 21, 8, 8, 52, 38, -18, 8, -5, -5, -5, 8, 26, 8};
   double[] testM1 = new double[64];
   double[] testM2 = new double[64];
-  bool asdf = true;
+  boolean asdf = true;
   for(int i = 0; i < 64; i++)
   {
     testM1[i] = 1;
-    if(i
-    testM2[i] = 
+    if(asdf)
+      testM2[i] = 1;
+    else
+      testM2[i] = 0;
+      
+     asdf = !asdf;
   }
+  double[] testM3 = multiply(testM1, testM2);
   double[] dct = multiply(testM, dctMatrix);
   dct = multiply(dct, dctTransposed);
   for(double num : dct)
