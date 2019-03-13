@@ -51,12 +51,15 @@ double[] multiply(double[] a, double[] b)
   return c;
 }
 
-float dctTransform(int[] matrix)
+double[] dctTransform(double[] matrix)
 {
   // width and height = 8
+  double[] dctMatrix = dctGenerate();
+  double[] dctTransposed = dctTranspose(dctMatrix);
   
-  
-  return 0;
+  double[] dct = multiply(matrix, dctTransposed);
+  dct = multiply(dctMatrix, dct);
+  return dct;
   
 }
 
@@ -97,6 +100,8 @@ double[] dctTranspose(double[] m)
   
   return transposed;
 }
+
+
 
 void draw() {
   kitten.loadPixels();
@@ -161,28 +166,49 @@ void draw() {
   arrCr = subtract(arrCr, 128);
   arrCb = subtract(arrCb, 128);
   
-  // Generate DCT Matrix
-  double[] dctMatrix = dctGenerate();
-  double[] dctTransposed = dctTranspose(dctMatrix);
-  double[] testM = {26, -5, -5, -5, -5, -5, -5, 8, 64, 52, 8, 26, 26, 26, 8, -18, 126, 70, 26, 26, 52, 26, -5, -5, 111, 52, 8, 52, 52, 38, -5, -5, 52, 26, 8, 39, 38, 21, 8, 8, 0, 8, -5, 8, 26, 52, 70, 26, -5, -23, -18, 21, 8, 8, 52, 38, -18, 8, -5, -5, -5, 8, 26, 8};
-  double[] testM1 = new double[64];
-  double[] testM2 = new double[64];
-  boolean asdf = true;
-  for(int i = 0; i < 64; i++)
-  {
-    testM1[i] = 1;
-    if(asdf)
-      testM2[i] = 1;
-    else
-      testM2[i] = 0;
-      
-     asdf = !asdf;
+  double[] dctY = new double[arrY.length];
+  double[] dctCr = new double[arrCr.length];
+  double[] dctCb = new double[arrCb.length];
+  
+  for (int y = 0; y < kitten.height / 8; y++)
+  { 
+   for (int x = 0; x < kitten.width / 8; x++)
+   {
+     double[] tmpY = new double[64];
+     double[] tmpCr = new double[64];
+     double[] tmpCb = new double[64];
+     
+     
+    for (int i = 0; i < 64; i++)
+    {
+     int idx = x*8 + (y*8 * kitten.width) + i;
+     int yPix = arrY[idx];
+     int crPix = arrCr[idx];
+     int cbPix = arrCb[idx];
+     
+     tmpY[i] = (double)yPix;
+     tmpCr[i] = (double)crPix;
+     tmpCb[i] = (double)cbPix;
+    }
+    
+    tmpY = dctTransform(tmpY);
+    tmpCr = dctTransform(tmpCr);
+    tmpCb = dctTransform(tmpCb);
+    
+    for (int i = 0; i < 64; i++)
+    {
+      int idx = x*8 + (y*8 * kitten.width) + i;
+      dctY[idx] = tmpY[i];
+      dctCr[idx] = tmpCr[i];
+      dctCb[idx] = tmpCb[i];
+    }
+   }
   }
-  double[] testM3 = multiply(testM1, testM2);
-  double[] dct = multiply(testM, dctTransposed);
-  dct = multiply(dctMatrix, dct);
-  for(double num : dct)
-    print(num + "\n");
+  
+  // Generate DCT Matrix
+  
+  //for(double num : dct)
+  //  print(num + "\n");
   
   kitten.updatePixels();
   kittenNew.updatePixels();
