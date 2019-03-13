@@ -51,15 +51,12 @@ double[] multiply(double[] a, double[] b)
   return c;
 }
 
-double[] dctTransform(double[] matrix)
+float dctTransform(int[] matrix)
 {
   // width and height = 8
-  double[] dctMatrix = dctGenerate();
-  double[] dctTransposed = dctTranspose(dctMatrix);
   
-  double[] dct = multiply(matrix, dctTransposed);
-  dct = multiply(dctMatrix, dct);
-  return dct;
+  
+  return 0;
   
 }
 
@@ -100,8 +97,6 @@ double[] dctTranspose(double[] m)
   
   return transposed;
 }
-
-
 
 void draw() {
   kitten.loadPixels();
@@ -166,61 +161,15 @@ void draw() {
   arrCr = subtract(arrCr, 128);
   arrCb = subtract(arrCb, 128);
   
-  double[] dctY = new double[arrY.length];
-  double[] dctCr = new double[arrCr.length];
-  double[] dctCb = new double[arrCb.length];
-  
-  for (int cy = 0; cy < kitten.height / 8; cy++)
-  { 
-   for (int cx = 0;cx < kitten.width / 8; cx++)
-   {
-     double[] tmpY = new double[64];
-     double[] tmpCr = new double[64];
-     double[] tmpCb = new double[64];
-     
-     
-    for (int px = 0; px < 8; px++)
-    {
-      for (int py = 0; py < 8; py++)
-      {
-        int idx = (cy * (kitten.width/8) * 64) + (cx * 8 + px) + (py * kitten.width);
-        int i = px + py * 8;
-        int yPix = arrY[idx];
-        int crPix = arrCr[idx];
-        int cbPix = arrCb[idx];
-         
-        tmpY[i] = (double)yPix;
-        tmpCr[i] = (double)crPix;
-        tmpCb[i] = (double)cbPix;
-      }
-     
-    }
-    
-    tmpY = dctTransform(tmpY);
-    tmpCr = dctTransform(tmpCr);
-    tmpCb = dctTransform(tmpCb);
-    
-    for (int px = 0; px < 8; px++)
-    {
-      for (int py = 0; py < 8; py++)
-      {
-        int idx = (cy * (kitten.width/8) * 64) + (cx * 8 + px) + py * kitten.width;
-        int i = px + py * 8;
-        dctY[idx] = tmpY[i];
-        dctCr[idx] = tmpCr[i];
-        dctCb[idx] = tmpCb[i];
-      }
-    }
-    
-    for(double dct : dctY)
-      print(dct + "\n");
-   }
-  }
-  
   // Generate DCT Matrix
+  double[] dctMatrix = dctGenerate();
+  double[] dctTransposed = dctTranspose(dctMatrix);
+  double[] dct = multiply(testM, dctTransposed);
+  dct = multiply(dctMatrix, dct);
   
-  //for(double num : dct)
-  //  print(num + "\n");
+  
+  for(double num : dct)
+    print(num + "\n");
   
   kitten.updatePixels();
   kittenNew.updatePixels();
