@@ -212,8 +212,7 @@ void draw() {
       }
     }
     
-    for(double dct : dctY)
-      print(dct + "\n");
+
    }
   }
   
@@ -221,8 +220,11 @@ void draw() {
   
   //for(double num : dct)
   //  print(num + "\n");
+  for(double dct : dctY)
+    print(dct + "\n");
   
   kitten.updatePixels();
   kittenNew.updatePixels();
   image(kittenNew, 512, 0);
+  exit();
 }
