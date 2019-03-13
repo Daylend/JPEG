@@ -239,9 +239,9 @@ void draw() {
     }
   }
   double[][] testM3 = multiply(testM1, testM2);
-  double[][] dct = multiply(testM, dctMatrix);
-  dct = multiply(dct, dctTransposed);
-  for(double[] arr : testM3)
+  double[][] dct = multiply(testM, dctTransposed);
+  dct = multiply(dctMatrix, dct);
+  for(double[] arr : dct)
     for (double num : arr)
       print(num + "\n");
   
