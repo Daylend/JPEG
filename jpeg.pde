@@ -174,44 +174,61 @@ void draw() {
   double[][] dctCr = new double[arrCr.length][arrCr[0].length];
   double[][] dctCb = new double[arrCb.length][arrCb[0].length];
   
-  //for (int y = 0; y < kitten.height / 8; y++)
-  //{ 
-  // for (int x = 0; x < kitten.width / 8; x++)
-  // {
-  //   double[][] tmpY = new double[8][8];
-  //   double[][] tmpCr = new double[8][8];
-  //   double[][] tmpCb = new double[8][8];
+  for (int y = 0; y < kitten.height / 8; y++)
+  { 
+   for (int x = 0; x < kitten.width / 8; x++)
+   {
+     double[][] tmpY = new double[8][8];
+     double[][] tmpCr = new double[8][8];
+     double[][] tmpCb = new double[8][8];
      
      
-  //  for (int i = 0; i < 8; i++)
-  //  {
-  //    int yIdx = y*8 + i;
-  //    int xIdx = x*8 + i;
-  //   int yPix = arrY[yIdx][xIdx];
-  //   int crPix = arrCr[yIdx][xIdx];
-  //   int cbPix = arrCb[yIdx][xIdx];
+    for (int i = 0; i < 8; i++)
+    {
+      int yIdx = y*8 + i;
+      int xIdx = x*8 + i;
+     int yPix = arrY[yIdx][xIdx];
+     int crPix = arrCr[yIdx][xIdx];
+     int cbPix = arrCb[yIdx][xIdx];
      
-  //   tmpY[yIdx][xIdx] = (double)yPix;
-  //   tmpCr[yIdx][xIdx] = (double)crPix;
-  //   tmpCb[yIdx][xIdx] = (double)cbPix;
-  //  }
+     tmpY[yIdx][xIdx] = (double)yPix;
+     tmpCr[yIdx][xIdx] = (double)crPix;
+     tmpCb[yIdx][xIdx] = (double)cbPix;
+    }
     
-  //  tmpY = dctTransform(tmpY);
-  //  tmpCr = dctTransform(tmpCr);
-  //  tmpCb = dctTransform(tmpCb);
+    tmpY = dctTransform(tmpY);
+    tmpCr = dctTransform(tmpCr);
+    tmpCb = dctTransform(tmpCb);
     
-  //  for (int i = 0; i < 64; i++)
-  //  {
-  //    int yIdx = y*8 + i;
-  //    int xIdx = x*8 + i;
-  //    dctY[yIdx][xIdx] = tmpY[yIdx][xIdx];
-  //    dctCr[yIdx][xIdx] = tmpCr[yIdx][xIdx];
-  //    dctCb[yIdx][xIdx] = tmpCb[yIdx][xIdx];
-  //  }
-  // }
-  //}
+    print(dctY.length + " " + dctY[0].length);
+    
+    for (int i = 0; i < tmpY.length; i++)
+    {
+      for (int j = 0; j < tmpY[0].length; j++)
+      {
+      int yIdx = y*8 + i;
+      int xIdx = x*8 + j;
+        
+        print("i and j");
+        print(i + " ");
+        print(j + "\n");
+        
+        double tY = tmpY[i][j];
+        double tCr = tmpCr[i][j];
+        double tCb = tmpCb[i][j];
+        
+        print("not i and j");
+        print(yIdx + " ");
+        print(xIdx + "\n");
+      dctY[yIdx][xIdx] = tY;
+      dctCr[yIdx][xIdx] = tCr;
+      dctCb[yIdx][xIdx] = tCb;
+      }
+    }
+   }
+  }
     // Generate DCT Matrix
-  double[][] dctMatrix = dctGenerate();
+  double[][] dctMatrix = dctGenerate(); //<>//
   double[][] dctTransposed = dctTranspose(dctMatrix);
   double[][] testM = { { 26, -5, -5, -5, -5, -5, -5, 8 },
                        { 64, 52, 8, 26, 26, 26, 8, -18 },
