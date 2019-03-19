@@ -1,6 +1,7 @@
 PImage kitten;
 PImage kittenNew;
-
+int[] qTable50 = {16,11,10,16,24,40,51,61,12,12,14,19,26,58,60,55,14,13,16,24,40,57,69,56,14,17,22,29,51,87,80,62,18,22,37,56,68,109,103,77,24,35,55,64,81,104,113,92,49,64,78,87,103,121,120,101,72,92,95,98,112,100,103,99};
+int[] qTable90 = {3,2,2,3,5,8,10,12,2,2,3,4,5,12,12,11,3,3,3,5,8,11,14,11,3,3,4,6,10,17,16,12,4,4,7,11,14,22,21,15,5,7,11,13,16,12,23,18,10,13,16,17,21,24,24,21,14,18,19,20,22,20,20,20};
 void setup() {
   size(1024, 1024);
   kitten = loadImage("kitten.jpg");
@@ -49,6 +50,25 @@ double[] multiply(double[] a, double[] b)
   }
   
   return c;
+}
+
+// Input is an 8x8 matrix
+double[] quantize(double[] dct, int[] qTable)
+{
+  double[] newQ = new double[dct.length];
+  
+  // I dont know why I did it in 2 dimensions but its too late just let it happen
+  for(int y = 0; y < 8; y++)
+  {
+    for(int x = 0; x < 8; x++)
+    {
+      int i = x + y * 8;
+      newQ[i] = Math.round(dct[i]/qTable[i]);
+    }
+  }
+  
+  
+  return newQ;
 }
 
 double[] dctTransform(double[] matrix)
@@ -166,14 +186,17 @@ void draw() {
   arrCr = subtract(arrCr, 128);
   arrCb = subtract(arrCb, 128);
   
-  double[] dctY = new double[arrY.length];
-  double[] dctCr = new double[arrCr.length];
-  double[] dctCb = new double[arrCb.length];
+  double[] newY = new double[arrY.length];
+  double[] newCr = new double[arrCr.length];
+  double[] newCb = new double[arrCb.length];
+  int currentBlock = 0;
   
+  // Perform DCT for each chunk of 8x8 blocks and save each channel to dctY, dctCr, dctCb
   for (int cy = 0; cy < kitten.height / 8; cy++)
   { 
    for (int cx = 0;cx < kitten.width / 8; cx++)
    {
+     currentBlock++;
      double[] tmpY = new double[64];
      double[] tmpCr = new double[64];
      double[] tmpCb = new double[64];
@@ -196,19 +219,84 @@ void draw() {
      
     }
     
+    // DCT and then quantize before the final matrix insertion
     tmpY = dctTransform(tmpY);
     tmpCr = dctTransform(tmpCr);
     tmpCb = dctTransform(tmpCb);
     
-    for (int px = 0; px < 8; px++)
+    tmpY = quantize(tmpY, qTable50);
+    tmpCr = quantize(tmpCr, qTable50);
+    tmpCb = quantize(tmpCb, qTable50);
+    
+    // Put values into final matrix -- old code
+    //for (int px = 0; px < 8; px++)
+    //{
+    //  for (int py = 0; py < 8; py++)
+    //  {
+    //    int idx = (cy * (kitten.width/8) * 64) + (cx * 8 + px) + py * kitten.width;
+    //    int i = px + py * 8;
+    //    newY[idx] = tmpY[i];
+    //    newCr[idx] = tmpCr[i];
+    //    newCb[idx] = tmpCb[i];
+        
+        
+        
+    //  }
+    //}
+    
+    // Store 8x8 block into final array in zigzag pattern
+    int px = 0;
+    int py = 0;
+    int i = currentBlock*8*8;
+    boolean down = true;
+    // Loop until you're in the bottom right corner
+    while(px != 8 && py != 8)
     {
-      for (int py = 0; py < 8; py++)
+      i++;
+      int index = px + py * 8;
+      
+      newY[i] = tmpY[index];
+      newCr[i] = tmpCr[index];
+      newCb[i] = tmpCb[index];
+      
+      // Look for new position in zigzag
+      if(px == 0 && py == 0)
       {
-        int idx = (cy * (kitten.width/8) * 64) + (cx * 8 + px) + py * kitten.width;
-        int i = px + py * 8;
-        dctY[idx] = tmpY[i];
-        dctCr[idx] = tmpCr[i];
-        dctCb[idx] = tmpCb[i];
+       px = 1;
+       py = 0;
+      } 
+      else
+      {
+        // Traverse down and left for zig zag, then up and right
+        // This could be cleaned up maybe
+        if(down)
+        {
+          if(px!=0)
+          {
+            px--;
+            py++;
+          }
+          else
+          {
+            down = false;
+            px++;
+            py--;
+          }
+        }
+        else
+        {
+          if(py!=0)
+          {
+            px++;
+            py--;
+          }
+          else
+          {
+            down = true;
+            px--;
+            py++;
+          }
+        }
       }
     }
     
@@ -216,13 +304,12 @@ void draw() {
    }
   }
   
-  // Generate DCT Matrix
   
-  //for(double num : dct)
-  //  print(num + "\n");
+  // debug code
   for(double dct : dctY)
     print(dct + "\n");
   
+  // update the kittens
   kitten.updatePixels();
   kittenNew.updatePixels();
   image(kittenNew, 512, 0);
