@@ -250,7 +250,7 @@ void draw() {
     int i = currentBlock*8*8;
     boolean down = true;
     // Loop until you're in the bottom right corner
-    while(px != 8 && py != 8)
+    while(px != 7 && py != 7)
     {
       i++;
       int index = px + py * 8;
@@ -279,7 +279,6 @@ void draw() {
           else
           {
             down = false;
-            px++;
             py--;
           }
         }
@@ -293,7 +292,6 @@ void draw() {
           else
           {
             down = true;
-            px--;
             py++;
           }
         }
