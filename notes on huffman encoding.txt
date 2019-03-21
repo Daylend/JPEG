@@ -1,0 +1,18 @@
+Parse the values from the quantization array against the predefined huffman table and put the values into another array.
+  
+  
+DC coefficient algo:
+  DiffDC(i) = DC(i) - DC(i-1)
+    --First one is just itself.
+  var prevdc
+  var curdc
+  var curdcpos
+  loop (condition)
+   dc = curdc - prevdc
+   curdc = prevdc
+
+AC coefficients Algo:
+  Cycle until value >0, increment zerocount each iteration
+  If found non-zero stop and encode value against the predefined huffman table using run/category of the two pair values.
+  Place into array of unique identifiers.
+  Repeat until end of quantization table, if no other non-zero found insert 0,0 pair.
