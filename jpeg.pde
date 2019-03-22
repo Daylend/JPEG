@@ -135,7 +135,7 @@ void draw() {
   for(int y = 0; y < kitten.height; y++) {
     for(int x = 0; x < kitten.width; x++) {
       color pixel = kitten.pixels[index(x,y)];
-      float R = red(pixel);
+      float R = red(pixel); //<>//
       float G = green(pixel);
       float B = blue(pixel);
       
@@ -196,7 +196,6 @@ void draw() {
   { 
    for (int cx = 0;cx < kitten.width / 8; cx++)
    {
-     currentBlock++;
      double[] tmpY = new double[64];
      double[] tmpCr = new double[64];
      double[] tmpCb = new double[64];
@@ -247,7 +246,7 @@ void draw() {
     // Store 8x8 block into final array in zigzag pattern
     int px = 0;
     int py = 0;
-    int i = currentBlock*8*8;
+    int i = currentBlock++*8*8;
     boolean down = true;
     // Loop until you're in the bottom right corner
     while(px != 7 && py != 7)
@@ -279,7 +278,7 @@ void draw() {
           else
           {
             down = false;
-            py--;
+            py++;
           }
         }
         else
@@ -292,7 +291,7 @@ void draw() {
           else
           {
             down = true;
-            py++;
+            px++;
           }
         }
       }
@@ -304,8 +303,8 @@ void draw() {
   
   
   // debug code
-  for(double dct : dctY)
-    print(dct + "\n");
+  //for(double dct : dctY)
+  //  print(dct + "\n");
   
   // update the kittens
   kitten.updatePixels();
