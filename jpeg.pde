@@ -2,6 +2,18 @@ PImage kitten;
 PImage kittenNew;
 int[] qTable50 = {16,11,10,16,24,40,51,61,12,12,14,19,26,58,60,55,14,13,16,24,40,57,69,56,14,17,22,29,51,87,80,62,18,22,37,56,68,109,103,77,24,35,55,64,81,104,113,92,49,64,78,87,103,121,120,101,72,92,95,98,112,100,103,99};
 int[] qTable90 = {3,2,2,3,5,8,10,12,2,2,3,4,5,12,12,11,3,3,3,5,8,11,14,11,3,3,4,6,10,17,16,12,4,4,7,11,14,22,21,15,5,7,11,13,16,12,23,18,10,13,16,17,21,24,24,21,14,18,19,20,22,20,20,20};
+// DC and AC tables from https://web.stanford.edu/class/ee398a/handouts/lectures/08-JPEG.pdf
+
+// the negatives can be derived from this, as well as the between values
+// For example: Lower positive range = upper positive range - prev upper range. Ex lower pos range = 7 - 3 = 4, so range is 4 to 7
+// Negative can follow the same idea, except we just negate all of the values first, or we can apply absolute to the value we are checking.
+int[] dcRanges = { 0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047 };
+int[] dcCategory = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+int[] dcCodeLength = { 2, 3, 3, 3, 3, 3, 4, 5, 6, 7, 8, 9 };
+
+// converted from binary to dec
+int[] dcCodeWord = { 0, 2, 3, 4, 5, 6, 14, 30, 62, 126, 254, 510 };
+  
 void setup() {
   size(1024, 1024);
   kitten = loadImage("kitten.jpg");
