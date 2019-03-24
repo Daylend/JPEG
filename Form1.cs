@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -96,7 +97,7 @@ namespace jpeg
 				for (int x = 0; x < 8; x++)
 				{
 					int i = x + y * 8;
-					newQ[i] = Math.Round((dct[i] / qTable[i]) * 1000) / 1000;
+					newQ[i] = Math.Round(dct[i] / qTable[i]);
 				}
 			}
 
@@ -336,6 +337,8 @@ namespace jpeg
 			}
 
 
+
+
 			// debug code
 			//for(double dct : dctY)
 			//  print(dct + "\n");
@@ -345,6 +348,137 @@ namespace jpeg
 			//kittenNew.updatePixels();
 			//image(kittenNew, 512, 0);
 			//exit();
+		}
+
+		void WriteStringToBinaryFile(string str)
+		{
+			Stream stream = new FileStream("D:\\test.dat", FileMode.Create);
+			BinaryWriter bw = new BinaryWriter(stream);
+			
+			bw.Write(str);
+
+			bw.Flush();
+			bw.Close();
+		}
+
+		string HuffmanEncode(double[] arr)
+		{
+			string encoded = "";
+
+			int prevDCValue = 0;
+			int currDCValue = 0;
+			int diffDC = 0;
+
+			int dcCount = 0;
+			int zeroCount = 0;
+
+			for (int i = 0; i < arr.Length; i++)
+			{
+				// TODO logic for finding that there are all zeros after a value.
+				if (arr[i] == 0)
+				{
+					zeroCount++;
+				}
+				else
+				{
+					while (zeroCount > 15)
+					{
+						encoded += "1111"; // takes 4 bits to store 15 bits.
+						encoded += "1"; // storage required to store 0
+						encoded += "0"; // actualy encoded value of 0 is 0
+
+						zeroCount -= 16;
+					}
+
+					encoded += IntToPaddedBinary(zeroCount);
+
+					if (dcCount++ % 64 == 0)
+					{
+						currDCValue = (int)arr[i];
+						diffDC = (int)arr[i] - prevDCValue;
+						prevDCValue = currDCValue;
+
+
+						encoded += EncodeIntToBinary(diffDC);
+					}
+					else
+					{
+						encoded += EncodeIntToBinary((int)arr[i]);
+					}
+
+					zeroCount = 0;
+				}
+			}
+
+			// if there are all zeros after the last encoded non-zero value then enter 00
+			if (zeroCount > 0)
+			{
+				encoded += "00";
+			}
+
+			return encoded;
+		}
+
+		// Assumed that val <= 15
+		string EncodeIntToBinary(int val)
+		{
+			string bin = "";
+			int BitCount = 0;
+
+			while (val > 0)
+			{
+				if (val % 2 == 1)
+					bin += "1";
+				else
+					bin += "0";
+
+				val = val / 2;
+				BitCount++;
+			}
+
+			bin = IntToBinary(BitCount) + bin;
+
+			return bin;
+		}
+
+		string IntToBinary(int val)
+		{
+			string bin = "";
+
+			while (val > 0)
+			{
+				if (val % 2 == 1)
+					bin += "1";
+				else
+					bin += "0";
+
+				val = val / 2;
+			}
+
+			return bin;
+		}
+
+		string IntToPaddedBinary(int val)
+		{
+
+			string bin = "";
+
+			while (val > 0)
+			{
+				if (val % 2 == 1)
+					bin += "1";
+				else
+					bin += "0";
+
+				val = val / 2;
+			}
+
+			while (bin.Length < 4)
+			{
+				bin += "0" + bin;
+			}
+
+			return bin;
 		}
 	}
 }
