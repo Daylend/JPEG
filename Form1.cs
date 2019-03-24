@@ -39,13 +39,10 @@ namespace jpeg
 		// converted from binary to dec
 		int[] dcCodeWord = { 0, 2, 3, 4, 5, 6, 14, 30, 62, 126, 254, 510 };
 
-		int kittenWidth = 512;
-		int kittenHeight = 512;
-
 
 		int index(int x, int y)
 		{
-			return x + y * kittenWidth;
+			return x + y * kitten.Width;
 		}
 
 		int aIndex(int x, int y, int w)
@@ -160,14 +157,14 @@ namespace jpeg
 		void draw()
 		{
 
-			int[] arrY = new int[kittenWidth * kittenHeight];
-			int[] arrCr = new int[kittenWidth * kittenHeight];
-			int[] arrCb = new int[kittenWidth * kittenHeight];
+			int[] arrY = new int[kitten.Width * kitten.Height];
+			int[] arrCr = new int[kitten.Width * kitten.Height];
+			int[] arrCb = new int[kitten.Width * kitten.Height];
 
 			// Convert RGB to YCbCr
-			for (int y = 0; y < kittenHeight; y++)
+			for (int y = 0; y < kitten.Height; y++)
 			{
-				for (int x = 0; x < kittenWidth; x++)
+				for (int x = 0; x < kitten.Width; x++)
 				{
 					Color pixel = kitten.GetPixel(x, y);
 					float R = pixel.R;
@@ -338,6 +335,14 @@ namespace jpeg
 
 
 
+			string qtBin = "";
+			for (int i = 0; i < qTable50.Length; i++)
+			{
+				// pad to byte
+				qtBin += IntToPaddedBinary(qTable50[i], 8);
+			}
+
+
 
 			// debug code
 			//for(double dct : dctY)
@@ -384,14 +389,16 @@ namespace jpeg
 					while (zeroCount > 15)
 					{
 						encoded += "1111"; // takes 4 bits to store 15 bits.
-						encoded += "1"; // storage required to store 0
+						encoded += "0000"; // storage required to store 0
 						encoded += "0"; // actualy encoded value of 0 is 0
 
 						zeroCount -= 16;
 					}
 
-					encoded += IntToPaddedBinary(zeroCount);
+					// Zero count before a non-zero, pad to 4 bits
+					encoded += IntToPaddedBinary(zeroCount, 4);
 
+					// All dc values
 					if (dcCount++ % 64 == 0)
 					{
 						currDCValue = (int)arr[i];
@@ -403,18 +410,23 @@ namespace jpeg
 					}
 					else
 					{
+						// AC values
 						encoded += EncodeIntToBinary((int)arr[i]);
 					}
 
 					zeroCount = 0;
 				}
+
+				if (i % 64 == 0)
+				{
+					if (zeroCount > 0)
+					{
+						encoded += "00000000"; // EOB
+					}
+				}
 			}
 
 			// if there are all zeros after the last encoded non-zero value then enter 00
-			if (zeroCount > 0)
-			{
-				encoded += "00";
-			}
 
 			return encoded;
 		}
@@ -436,29 +448,12 @@ namespace jpeg
 				BitCount++;
 			}
 
-			bin = IntToBinary(BitCount) + bin;
+			bin = IntToPaddedBinary(BitCount, 4) + bin;
 
 			return bin;
 		}
 
-		string IntToBinary(int val)
-		{
-			string bin = "";
-
-			while (val > 0)
-			{
-				if (val % 2 == 1)
-					bin += "1";
-				else
-					bin += "0";
-
-				val = val / 2;
-			}
-
-			return bin;
-		}
-
-		string IntToPaddedBinary(int val)
+		string IntToPaddedBinary(int val, int padding)
 		{
 
 			string bin = "";
@@ -473,12 +468,52 @@ namespace jpeg
 				val = val / 2;
 			}
 
-			while (bin.Length < 4)
+			while (bin.Length < padding)
 			{
 				bin += "0" + bin;
 			}
 
 			return bin;
+		}
+
+		string CraftJPG(string Y, string Cb, string Cr, string QT, string width, string height)
+		{
+			// SOI 0xFFD8 in bin
+			string jpg = "1111111111011000";
+
+			// APP0 section
+			jpg += "1111111111100000";							// APP0 0xFFE0 in bin
+			jpg += "0000000000010000";							// Length of APP0 = 16
+			jpg += "100101001000110010010010100011000000000";   // File identifier mark for jfif
+			jpg += "00000001";									// Major revision number
+			jpg += "00000010";                                  // Minor revision number
+			jpg += "00000000";									// Units
+			jpg += "000000000000001";							// x ratio
+			jpg += "000000000000001";                           // y ratio
+			jpg += "00000000";                                  // thumbnail x
+			jpg += "00000000";                                  // thumbnail y
+			jpg += "0000000000000000";							// thumbnail payload blank.
+
+			// Quantization table
+			jpg += "1111111111011011";                          // QT marker
+			jpg += "0000000001000011";							// length of our QT
+			jpg += "000000000";									// QT info
+			jpg += QT;											// QT values
+
+			// Start of frame
+			jpg += "1111111111000000";  // SOF0 start of frame
+			jpg += "0000000000010001";	// Length
+			jpg += "00001000";          // data precision
+			jpg += width;				// width of image
+			jpg += height;              // height of image
+			jpg += "00000011";          // num components
+			jpg += "000000010100010000000000"; // Component y
+			jpg += "000000100100010000000000"; // Component Cb
+			jpg += "000000110100010000000000"; // Component Cr
+
+
+
+			return jpg;
 		}
 	}
 }
