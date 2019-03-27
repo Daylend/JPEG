@@ -342,10 +342,8 @@ namespace jpeg
                 qtBin += IntToPaddedBinary(qTable50[i], 8);
             }
 
-
-            string test = RunLengthEncode(newY);
-            string a = HuffmanEncode(test);
-
+			string w = IntToPaddedBinary(kitten.Width, 16);
+			string h = IntToPaddedBinary(kitten.Height, 16);
 
 			string strY = RunLengthEncode(newY);
 			string huffY = HuffmanEncode(strY);
@@ -356,14 +354,12 @@ namespace jpeg
 			string strCr = RunLengthEncode(newCr);
 			string huffCr = HuffmanEncode(strCr);
 
-			string w = IntToPaddedBinary(kitten.Width, 8);
-			string h = IntToPaddedBinary(kitten.Height, 8);
 			//string strY = "";
 			//string strCb = "";
 			//string strCr = "";
 			//string w = "";
 			//string h = "";
-			string jpg = CraftJPG(huffY, huffCb, huffCr, "", w, h);
+			string jpg = CraftJPG(huffY, huffCb, huffCr, qtBin, w, h);
 			//string jpg = CraftJPG(strY, strCb, strCr, "", w, h);
 
 			List<Byte> b = ConvertToByte(jpg);
@@ -609,7 +605,7 @@ namespace jpeg
 
             while (bin.Length < padding)
             {
-                bin += "0" + bin;
+                bin = "0" + bin;
             }
 
             return bin;
