@@ -345,21 +345,73 @@ namespace jpeg
 
             string test = RunLengthEncode(newY);
             string a = HuffmanEncode(test);
-            string bip = "boop";
 
 
-            // debug code
-            //for(double dct : dctY)
-            //  print(dct + "\n");
+			string strY = RunLengthEncode(newY);
+			string huffY = HuffmanEncode(strY);
 
-            // update the kittens
-            //kitten.updatePixels();
-            //kittenNew.updatePixels();
-            //image(kittenNew, 512, 0);
-            //exit();
-        }
+			string strCb = RunLengthEncode(newCb);
+			string huffCb = HuffmanEncode(strCb);
 
-        void WriteStringToBinaryFile(string str)
+			string strCr = RunLengthEncode(newCr);
+			string huffCr = HuffmanEncode(strCr);
+
+			string w = IntToPaddedBinary(kitten.Width, 8);
+			string h = IntToPaddedBinary(kitten.Height, 8);
+			//string strY = "";
+			//string strCb = "";
+			//string strCr = "";
+			//string w = "";
+			//string h = "";
+			string jpg = CraftJPG(huffY, huffCb, huffCr, "", w, h);
+			//string jpg = CraftJPG(strY, strCb, strCr, "", w, h);
+
+			List<Byte> b = ConvertToByte(jpg);
+			WriteByteToBinaryFile(b);
+
+			int f = 5;
+			// debug code
+			//for(double dct : dctY)
+			//  print(dct + "\n");
+
+			// update the kittens
+			//kitten.updatePixels();
+			//kittenNew.updatePixels();
+			//image(kittenNew, 512, 0);
+			//exit();
+		}
+
+		void WriteByteToBinaryFile(List<Byte> b)
+		{
+			Stream stream = new FileStream("D:\\test.dat", FileMode.Create);
+			BinaryWriter bw = new BinaryWriter(stream);
+
+			for (int i = 0; i < b.Count; i++)
+				bw.Write(b[i]);
+
+			bw.Flush();
+			bw.Close();
+		}
+
+		List<Byte> ConvertToByte(string str)
+		{
+			List<Byte> b = new List<Byte>();
+			for (int i = 0; i < str.Length; i += 8)
+			{
+
+				if (str.Length % 8 != 0)
+					str += "1";
+				string st = str.Substring(i, 8);
+				int s = Convert.ToInt32(st, 2);
+
+				Byte bt = Convert.ToByte(s);
+				b.Add(bt);
+			}
+
+			return b;
+		}
+
+		void WriteStringToBinaryFile(string str)
         {
             Stream stream = new FileStream("D:\\test.dat", FileMode.Create);
             BinaryWriter bw = new BinaryWriter(stream);
@@ -447,6 +499,12 @@ namespace jpeg
                 int offset = 1;
                 for (; offset <= 16; offset++)
                 {
+					//string v = RLE.Substring(17904, 3);
+					if (index + offset > RLE.Length)
+					{
+						huffmaned += RLE.Substring(index, 3);
+						break;
+					}
                     string code = BitToCode(RLE.Substring(index, offset));
                     if (code != "")
                     {
@@ -458,6 +516,13 @@ namespace jpeg
                 // Advance window to the element after the end of the previous window
                 index += ++offset;
             }
+			if (huffmaned.Length % 8 != 0)
+			{
+				for (int i = 0; i < huffmaned.Length % 8; i++)
+				{
+					huffmaned += "1";
+				}
+			}
             return huffmaned;
         }
 
@@ -558,12 +623,13 @@ namespace jpeg
             // APP0 section
             jpg += "1111111111100000";                          // APP0 0xFFE0 in bin
             jpg += "0000000000010000";                          // Length of APP0 = 16
-            jpg += "100101001000110010010010100011000000000";   // File identifier mark for jfif
-            jpg += "00000001";                                  // Major revision number
+            jpg += "0100101001000110010010010100011000000000";// File identifier mark for jfif
+
+			jpg += "00000001";                                  // Major revision number
             jpg += "00000010";                                  // Minor revision number
             jpg += "00000000";                                  // Units
-            jpg += "000000000000001";                           // x ratio
-            jpg += "000000000000001";                           // y ratio
+            jpg += "0000000000000001";                           // x ratio
+            jpg += "0000000000000001";                           // y ratio
             jpg += "00000000";                                  // thumbnail x
             jpg += "00000000";                                  // thumbnail y
             jpg += "0000000000000000";                          // thumbnail payload blank.
@@ -571,7 +637,7 @@ namespace jpeg
             // Quantization table
             jpg += "1111111111011011";                          // QT marker
             jpg += "0000000001000011";                          // length of our QT
-            jpg += "000000000";                                 // QT info
+            jpg += "00000000";                                 // QT info
             jpg += QT;                                          // QT values
 
             // Start of frame
@@ -585,13 +651,22 @@ namespace jpeg
             jpg += "000000100100010000000000"; // Component Cb
             jpg += "000000110100010000000000"; // Component Cr
 
+			// DHT predefined
+			jpg += "111111111100010000000000101101010001000000000000000000100000000100000011000000110000001000000100000000110000010100000101000001000000010000000000000000000000000101111101000000010000001000000011000000000000010000010001000001010001001000100001001100010100000100000110000100110101000101100001000001110010001001110001000101000011001010000001100100011010000100001000001000110100001010110001110000010001010101010010110100011111000000100100001100110110001001110010100000100000100100001010000101100001011100011000000110010001101000100101001001100010011100101000001010010010101000110100001101010011011000110111001110000011100100111010010000110100010001000101010001100100011101001000010010010100101001010011010101000101010101010110010101110101100001011001010110100110001101100100011001010110011001100111011010000110100101101010011100110111010001110101011101100111011101111000011110010111101010000011100001001000010110000110100001111000100010001001100010101001001010010011100101001001010110010110100101111001100010011001100110101010001010100011101001001010010110100110101001111010100010101001101010101011001010110011101101001011010110110110101101111011100010111001101110101100001011000011110001001100010111000110110001111100100011001001110010101101001011010011110101001101010111010110110101111101100011011001110110101110000111100010111000111110010011100101111001101110011111101000111010011110101011110001111100101111001111110100111101011111011011110111111110001111100111111010"; 
+			
+			// start of scan predefined, and Y
+			jpg += "11111111110110100000000000001100000000110000000100000000000000010000001000000011";
+			jpg += "0000001000000000000000010000001000000011"; // Cr
+			jpg += "0000001100000000000000010000001000000011"; // Cb
 
+			jpg += Y;
+			jpg += Cb;
+			jpg += Cr;
 
-            // start of scan
-            jpg += "1111111111011010"; // SOS marker
+			// end of image
+			jpg += "1111111111011001";
 
-
-            return jpg;
+			return jpg;
         }
     }
 }
