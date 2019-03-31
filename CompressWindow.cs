@@ -20,21 +20,10 @@ namespace jpeg
 
 		Bitmap image;
 		string filename;
+		bool dirSet = false;
 
 		int[] qTable50 = { 16, 11, 10, 16, 24, 40, 51, 61, 12, 12, 14, 19, 26, 58, 60, 55, 14, 13, 16, 24, 40, 57, 69, 56, 14, 17, 22, 29, 51, 87, 80, 62, 18, 22, 37, 56, 68, 109, 103, 77, 24, 35, 55, 64, 81, 104, 113, 92, 49, 64, 78, 87, 103, 121, 120, 101, 72, 92, 95, 98, 112, 100, 103, 99 };
 		int[] qTable90 = { 3, 2, 2, 3, 5, 8, 10, 12, 2, 2, 3, 4, 5, 12, 12, 11, 3, 3, 3, 5, 8, 11, 14, 11, 3, 3, 4, 6, 10, 17, 16, 12, 4, 4, 7, 11, 14, 22, 21, 15, 5, 7, 11, 13, 16, 12, 23, 18, 10, 13, 16, 17, 21, 24, 24, 21, 14, 18, 19, 20, 22, 20, 20, 20 };
-
-		// DC and AC tables from https://web.stanford.edu/class/ee398a/handouts/lectures/08-JPEG.pdf
-
-		// the negatives can be derived from this, as well as the between values
-		// For example: Lower positive range = upper positive range - prev upper range. Ex lower pos range = 7 - 3 = 4, so range is 4 to 7
-		// Negative can follow the same idea, except we just negate all of the values first, or we can apply absolute to the value we are checking.
-		int[] dcRanges = { 0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047 };
-		int[] dcCategory = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
-		int[] dcCodeLength = { 2, 3, 3, 3, 3, 3, 4, 5, 6, 7, 8, 9 };
-
-		// converted from binary to dec
-		int[] dcCodeWord = { 0, 2, 3, 4, 5, 6, 14, 30, 62, 126, 254, 510 };
 
 		int Index(int x, int y)
 		{
@@ -132,6 +121,7 @@ namespace jpeg
 			return dctMatrix;
 		}
 
+		// perform a matrix transpose on our DCT matrix.
 		double[] DCTTranspose(double[] m)
 		{
 			double[] transposed = new double[m.Length];
@@ -289,6 +279,8 @@ namespace jpeg
 				}
 
 
+
+				// Convert everything into binary strings and write to a jpg file.
 				string qtBin = "";
 				for (int i = 0; i < qTable50.Length; i++)
 				{
@@ -323,6 +315,7 @@ namespace jpeg
 			}
 		}
 
+		// Method for writing to a file.
 		void WriteByteToBinaryFile(List<Byte> b)
 		{
 			Stream stream = new FileStream(txtSaveLocation.Text + "\\BD" + filename, FileMode.Create);
@@ -335,6 +328,7 @@ namespace jpeg
 			bw.Close();
 		}
 
+		// converts a string of binary to bytes
 		List<Byte> ConvertToByte(string str)
 		{
 			List<Byte> b = new List<Byte>();
@@ -353,6 +347,7 @@ namespace jpeg
 			return b;
 		}
 
+		// Run length encoding for checking how many zeroes precede a non-zero and their required bit size.
 		string RunLengthEncode(double[] arr)
 		{
 			string encoded = "";
@@ -366,7 +361,6 @@ namespace jpeg
 
 			for (int i = 0; i < arr.Length; i++)
 			{
-				// TODO logic for finding that there are all zeros after a value.
 				if (arr[i] == 0)
 				{
 					zeroCount++;
@@ -500,7 +494,7 @@ namespace jpeg
 			return "";
 		}
 
-		// Assumed that val <= 15
+		// Assumed that val <= 15 for a byte
 		string EncodeIntToBinary(int val)
 		{
 			string bin = "";
@@ -524,7 +518,7 @@ namespace jpeg
 
 		string IntToPaddedBinary(int val, int padding)
 		{
-
+			// adds padding the the binary value to make sure it is the same size as specified.
 			string bin = "";
 
 			while (val > 0)
@@ -611,13 +605,15 @@ namespace jpeg
 		{
 			OpenFileDialog theDialog = new OpenFileDialog();
 			theDialog.Title = "Open Text File";
-			theDialog.Filter = "JPG files|*.jpg";
-			theDialog.InitialDirectory = @"C:\";
+			theDialog.Filter = "Image File|*.jpg;*.jpeg;*.png";
+			if (!dirSet) theDialog.InitialDirectory = @"C:\";
 			if (theDialog.ShowDialog() == DialogResult.OK)
 			{
 				try
 				{
 					txtFilePath.Text = theDialog.FileName;
+					theDialog.InitialDirectory = Path.GetFullPath(theDialog.FileName);
+					dirSet = true;
 				}
 				catch (Exception ex)
 				{
@@ -648,13 +644,12 @@ namespace jpeg
 		{
 			string ogfile = txtFilePath.Text;
 			string newFile = txtSaveLocation.Text + "\\BD" + filename;
-			// width * height * 3 channels * 8 bits per channel
 			lsData.Items.AddRange(new object[]
 			{
 				Path.GetFileName(txtFilePath.Text),
-				"Raw Image Size: " + (image.Width * image.Height * 3 * 8).ToString(),
-				"Original Image Size in bytes: " + new System.IO.FileInfo(ogfile).Length,
-				"Our Image Size in bytes: " + new System.IO.FileInfo(newFile).Length,
+				"Raw Image Size: " + (image.Width * image.Height * 3 * 8).ToString(),		// width * height * 3 channels * 8 bits per channel
+				"Original Image Size in bytes: " + new System.IO.FileInfo(ogfile).Length,	// size of the original image
+				"Our Image Size in bytes: " + new System.IO.FileInfo(newFile).Length,		// size of our image
 				""
 			});
 		}

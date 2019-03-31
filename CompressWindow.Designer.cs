@@ -66,7 +66,6 @@
 			this.txtFilePath.Name = "txtFilePath";
 			this.txtFilePath.Size = new System.Drawing.Size(326, 20);
 			this.txtFilePath.TabIndex = 1;
-			this.txtFilePath.Text = "D:\\code\\java\\JPEG\\images\\Original\\BlackSquareSmall.jpg";
 			// 
 			// label1
 			// 
@@ -92,7 +91,6 @@
 			this.txtSaveLocation.Name = "txtSaveLocation";
 			this.txtSaveLocation.Size = new System.Drawing.Size(326, 20);
 			this.txtSaveLocation.TabIndex = 4;
-			this.txtSaveLocation.Text = "D:\\code\\java\\JPEG\\images\\Compressed";
 			// 
 			// btnChooseFolder
 			// 
